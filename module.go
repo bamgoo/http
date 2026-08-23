@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"io/fs"
 	"sort"
 	"strconv"
@@ -676,7 +675,9 @@ func (m *Module) Start() {
 	}
 
 	m.started = true
-	fmt.Printf("infrago http module is running with %d connections, %d routers.\n", len(m.instances), len(m.routers))
+	infra.Log(infra.LogLevelInfo, "http", "module started", Map{
+		"connections": len(m.instances), "routers": len(m.routers),
+	})
 }
 
 func (m *Module) Stop() {

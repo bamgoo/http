@@ -63,6 +63,27 @@ func TestCrossingHandlesOptionsWithoutRoute(t *testing.T) {
 	}
 }
 
+func TestPreprocessingPropagatesRequestID(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "http://api.example.com/demo", nil)
+	req.Header.Set("X-Request-ID", "request-123")
+	ctx := &Context{
+		Meta:    infra.NewMeta(),
+		inst:    &Instance{},
+		reader:  req,
+		headers: map[string]string{},
+		cookies: map[string]Cookie{},
+	}
+
+	ctx.inst.preprocessing(ctx)
+
+	if got := ctx.RequestId(); got != "request-123" {
+		t.Fatalf("expected request id to propagate, got %q", got)
+	}
+	if got := ctx.headers["X-Request-ID"]; got != "request-123" {
+		t.Fatalf("expected response request id, got %q", got)
+	}
+}
+
 func TestExpandRouterMergesLoadFromMethodRouting(t *testing.T) {
 	routers := expandRouter("demo", Router{
 		Uri: "/demo",
@@ -102,7 +123,7 @@ func TestLoadingInvokesAndStoresLocals(t *testing.T) {
 			return Map{"id": ctx.Args["id"], "name": "demo"}
 		},
 	})
-		prepareLoadInfra(t)
+	prepareLoadInfra(t)
 
 	inst := &Instance{}
 	ctx := &Context{

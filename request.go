@@ -42,6 +42,14 @@ func (inst *Instance) preprocessing(ctx *Context) {
 	if tp := ctx.Header("traceparent"); tp != "" {
 		ctx.ParseTraceParent(tp)
 	}
+	requestID := strings.TrimSpace(ctx.Header("X-Request-ID"))
+	if requestID == "" {
+		requestID = strings.TrimSpace(ctx.Header("X-Correlation-ID"))
+	}
+	if requestID != "" {
+		ctx.RequestId(requestID)
+	}
+	ctx.Header("X-Request-ID", ctx.RequestId())
 
 	// Detect AJAX
 	if ctx.Header("X-Requested-With") != "" ||
